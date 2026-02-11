@@ -52,6 +52,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import kotlinx.coroutines.delay
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.time.LocalDateTime
 
 
 class MainActivity : ComponentActivity() {
@@ -90,6 +91,7 @@ fun ClockScreen() {
     val hh = time.format(DateTimeFormatter.ofPattern("HH"))
     val mm = time.format(DateTimeFormatter.ofPattern("mm"))
     val ss = time.format(DateTimeFormatter.ofPattern("ss"))
+    val dateStr = time.format(DateTimeFormatter.ofPattern("uuuu / MM / dd"))
 
     Box(
         modifier = Modifier
@@ -97,6 +99,17 @@ fun ClockScreen() {
             .background(Color(0xFF000000))
             .padding(horizontal = 48.dp)
     ) {
+        // 左上角：日期
+        Text(
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(top = 8.dp, start = 8.dp),
+            text = dateStr,
+            color = Color(0xFFBDBDBD),
+            fontFamily = FontFamily(Font(R.font.storyscript_regular)),
+            fontSize = 40.sp
+        )
+
         // 右上角：電量
         BatteryBadge(
             modifier = Modifier
@@ -231,14 +244,14 @@ private fun Dp.toScaledSp(ratio: Float): TextUnit {
 
 /** 取得當前時間並每秒對齊 tick */
 @Composable
-fun rememberTickingTime(): State<LocalTime> {
-    return produceState(initialValue = LocalTime.now()) {
+fun rememberTickingTime(): State<LocalDateTime> {
+    return produceState(initialValue = LocalDateTime.now()) {
         while (true) {
             val now = System.currentTimeMillis()
             val remainder = now % 1000
             val wait = if (remainder < 500) 500 - remainder else 1000 - remainder
             delay(wait)
-            value = LocalTime.now()
+            value = LocalDateTime.now()
         }
     }
 }
@@ -305,18 +318,18 @@ fun BatteryBadge(modifier: Modifier = Modifier, percent: Int, charging: Boolean)
                 ) {
                     Text(
                         text = "$percent",
-                        color = if (percent <= 30) Color.Red else Color(0xFFBDBDBD),
+                        color = if (charging) Color.Yellow else if (percent <= 30) Color.Red else Color.Green,
                         fontFamily = costomFont,
                         fontSize = 18.sp
                     )
                 }
             }
         }
-        Image(
-            modifier = Modifier,
-            painter = painterResource(id = R.drawable.bolt),
-            contentDescription = "充電",
-            alpha = if (charging) 1f else 0f // 1f 完全不透明，0f 完全透明
-        )
+//        Image(
+//            modifier = Modifier,
+//            painter = painterResource(id = R.drawable.bolt),
+//            contentDescription = "充電",
+//            alpha = if (charging) 1f else 0f // 1f 完全不透明，0f 完全透明
+//        )
     }
 }
